@@ -16,13 +16,10 @@ The parser currently recognises 3 types of events: lectures, seminars and practi
 NOTE:
 -----
 
-For yttp to be able to properly extract event type information, the type_offset parameter in 
-config.json may need adjusting.  This is due to differences between lesson ID formats.
-
-To work out the number, look at a lesson ID on the timetable, find the number of the character 
-that signifies the lesson type (generally E, P or L just before the group number), then subtract 
-1.  For first-year Computer Science, the offset is 9 (the default in config.json), though 
-other-year CS student timetables are known to require a different offset (try 7).
+Due to differences in lesson ID codes, this yttp tries to auto-detect the type of lesson using a 
+somewhat flaky heuristic approach.  This may fail to detect the lesson type, which will cause 
+affected lessons to be marked with the type "ERROR" and separate calendar processing to (probably) 
+fail horribly.
 
 The base config.json provided contains abbreviations for 1st year Computer Science, as well as 
 some 4th/5th-year modules.
@@ -40,5 +37,5 @@ Dependencies:
 Credits:
 --------
 
-Code -> Alan Briolat
-A small bit of hacking for 1st-year use -> Matt Windsor
+* Code -> Alan Briolat
+* A small bit of hacking for 1st-year use -> Matt Windsor

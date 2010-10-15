@@ -15,8 +15,8 @@ TERMS = ('au', 'sp', 'su')
 WEEKS = [str(i) + t for t in TERMS for i in xrange(1, 11)]
 TYPES = {'L': 'Lecture',
          'S': 'Seminar',
-         'P': 'Practical', 
-         'E': 'Error retrieving type'}
+         'P': 'Practical'}
+
 
 def _week_date(term_dates, week):
     """Get the start date for *week* (e.g. 9su) based on *term_dates*."""
@@ -105,11 +105,7 @@ class Parser:
         row1, row2, row3 = event_td.findAll('table', recursive=False)
         event['id'] = row1('td')[0].font.string
         event['location'] = row1('td')[1].font.string.replace('&amp;', '&')
-        try:
-            event['type'] = TYPES[event['id'][int(config['type_offset'])]]
-        except KeyError:
-            # Error getting type.
-            event['type'] = TYPES['E']
+        event['type'] = Parser.parse_event_type(event['id'])
         description = row2.font.string.replace('&amp;', '&')
         if ' - ' in description:
             event['description'], event['description_extra'] = description.split(' - ', 1)
@@ -119,6 +115,15 @@ class Parser:
         event['weeks'] = Parser.parse_weeks(row3('td')[0].font.string)
         event['staff'] = (row3('td')[1].font.string or '').split(';')
         return event
+
+    @staticmethod
+    def parse_event_type(id_string):
+        """Extract the event type from the ID string."""
+        for type_key in TYPES.keys():
+            if id_string.rfind(type_key) != -1:
+                return TYPES[type_key]
+
+        return "ERROR"
 
     @staticmethod
     def parse_weeks(weeks):
