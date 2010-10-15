@@ -15,8 +15,8 @@ TERMS = ('au', 'sp', 'su')
 WEEKS = [str(i) + t for t in TERMS for i in xrange(1, 11)]
 TYPES = {'L': 'Lecture',
          'S': 'Seminar',
-         'P': 'Practical'}
-
+         'P': 'Practical', 
+         'E': 'Error retrieving type'}
 
 def _week_date(term_dates, week):
     """Get the start date for *week* (e.g. 9su) based on *term_dates*."""
@@ -105,7 +105,11 @@ class Parser:
         row1, row2, row3 = event_td.findAll('table', recursive=False)
         event['id'] = row1('td')[0].font.string
         event['location'] = row1('td')[1].font.string.replace('&amp;', '&')
-        event['type'] = TYPES[event['id'][7]]
+        try:
+            event['type'] = TYPES[event['id'][int(config['type_offset'])]]
+        except KeyError:
+            # Error getting type.
+            event['type'] = TYPES['E']
         description = row2.font.string.replace('&amp;', '&')
         if ' - ' in description:
             event['description'], event['description_extra'] = description.split(' - ', 1)
@@ -119,11 +123,23 @@ class Parser:
     @staticmethod
     def parse_weeks(weeks):
         """Convert a week specification into a list of weeks."""
-        if '-' in weeks:
-            w1, w2 = weeks.split('-', 1)
-            return WEEKS[WEEKS.index(w1):WEEKS.index(w2)+1]
+
+        # Split into comma ranges
+
+        if ', ' in weeks:
+            weeks = weeks.split(', ')
         else:
-            return [weeks]
+            weeks = [weeks]
+
+        # Now check for ranges and expand them
+
+        for week in weeks[:]:
+            if '-' in week:
+                w1, w2 = week.split('-', 1)
+                weeks.remove (week)
+                weeks.extend (WEEKS[WEEKS.index(w1):WEEKS.index(w2)+1])
+
+        return weeks
 
 
 class Generator:
